@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(.)
 
 add_executable(RS_Image_Processing
-        image.cpp
-        image.h
-        main.cpp)
+        src/image.cpp
+        include/image.h
+        src/main.cpp)
 
 #QT
 find_package(Qt5 COMPONENTS Widgets Gui LinguistTools REQUIRED)
