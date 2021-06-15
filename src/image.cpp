@@ -1,3 +1,6 @@
+//
+// Created by andy on 2021/6/14.
+//
 #include"include/image.h"
 
 void The_Image::ReadImage(const char *InputImagePath, const int nBand)
@@ -55,6 +58,7 @@ void The_Image::ReadImage(const char *InputImagePath, const int nBand)
     {
         for (int j = 0; j < imgWidth; j++)
         {
+            //TODO: 分段线性拉伸
             imagedata[i][j] = (float) pafScanline[t++];
 
             //找出本波段最大像素值

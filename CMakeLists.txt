@@ -8,7 +8,10 @@ include_directories(.)
 add_executable(RS_Image_Processing
         src/image.cpp
         include/image.h
-        src/main.cpp)
+        src/main.cpp include/correct.h src/correct.cpp)
+
+# Eigen
+find_package(Eigen3 REQUIRED)
 
 #QT
 find_package(Qt5 COMPONENTS Widgets Gui LinguistTools REQUIRED)
@@ -35,4 +38,5 @@ target_link_libraries(
         RS_Image_Processing
         Qt${QT_VERSION_MAJOR}::Widgets
         ${GDAL_LIBRARY}
+        Eigen3::Eigen
         )
