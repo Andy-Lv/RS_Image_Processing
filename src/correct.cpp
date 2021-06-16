@@ -51,7 +51,10 @@ void Correct::GetCoordinate()
     target.close();
 }
 
-void Correct::GetParameter()
+void Correct::GetParameter(double source_x[8],
+                           double source_y[8],
+                           double target_x[8],
+                           double target_y[8])
 {
     //读取参数坐标
     this->GetCoordinate();
@@ -69,17 +72,17 @@ void Correct::GetParameter()
     for (int i = 0; i < 8; ++i)
     {
         A(i, 0) = 1;
-        A(i, 1) = this->coor_a[i];
-        A(i, 2) = this->coor_b[i];
-        A(i, 3) = pow(this->coor_a[i], 2);
-        A(i, 4) = this->coor_a[i] * this->coor_a[i];
-        A(i, 5) = pow(this->coor_b[i], 2);
+        A(i, 1) = target_x[i];
+        A(i, 2) = target_y[i];
+        A(i, 3) = pow(target_x[i], 2);
+        A(i, 4) = target_x[i] * target_y[i];
+        A(i, 5) = pow(target_y[i], 2);
     }
 
     for (int i = 0; i < 8; ++i)
     {
-        Lx(i, 0) = this->coor_x[i];
-        Ly(i, 0) = this->coor_y[i];
+        Lx(i, 0) = source_x[i];
+        Ly(i, 0) = source_y[i];
     }
 
     //计算多项式系数
@@ -96,8 +99,129 @@ void Correct::GetParameter()
 
 void Correct::RelativeRegistration()
 {
-//TODO:1 纠正后图像边界范围确定
-//TODO:2 间接法纠正
-//TODO:3 双线心内插灰度重采样
-}
+//第一步:纠正后图像边界范围确定
 
+    //读取第一波段获得图像属性数据
+    The_Image wuce;
+    const char *InputImagePath = "../data/Geometric_Correction/wuce.tif";
+    wuce.ReadImage(InputImagePath, 1);
+
+    //获取四个角点像素坐标
+    int corner_x[4] = {0, wuce.GetImgWidth(), wuce.GetImgWidth(), 0};
+    int corner_y[4] = {0, 0, wuce.GetImgHeight(), wuce.GetImgWidth()};
+
+    //计算角点转换后的坐标位置
+    double new_corner_x[4];
+    double new_corner_y[4];
+
+    //获取参数
+    this->GetParameter(coor_a, coor_b, coor_x, coor_y);
+
+    for (int i = 0; i < 4; ++i)
+    {
+        new_corner_x[i] = this->para_a[0] + this->para_a[1] * corner_x[i] +
+                          this->para_a[2] * corner_y[i] + this->para_a[3] * pow(corner_x[i], 2) +
+                          this->para_a[4] * corner_x[i] * corner_y[i] + this->para_a[5] * pow(corner_y[i], 2);
+        new_corner_y[i] = this->para_b[0] + this->para_b[1] * corner_x[i] +
+                          this->para_b[2] * corner_y[i] + this->para_b[3] * pow(corner_x[i], 2) +
+                          this->para_b[4] * corner_x[i] * corner_y[i] + this->para_b[5] * pow(corner_y[i], 2);
+    }
+
+    //获取转换后坐标位置的最大值和最小值
+    double max_x, max_y, min_x, min_y;
+    double temp_x = 0;
+    double temp_y = 0;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        temp_x = max(temp_x, new_corner_x[i]);
+        temp_y = max(temp_y, new_corner_y[i]);
+    }
+    max_x = temp_x;
+    max_y = temp_y;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        temp_x = min(temp_x, new_corner_x[i]);
+        temp_y = min(temp_y, new_corner_y[i]);
+    }
+    min_x = temp_x;
+    min_y = temp_y;
+
+    this->new_imgWidth = int((max_x - min_y) / 2) + 1;
+    this->new_imgHeight = int((max_y - min_y) / 2) + 1;
+
+//间接法纠正
+    GDALAllRegister();
+    //图像驱动
+    GDALDriver *poDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
+
+    GDALDataset *InputImage = (GDALDataset *) GDALOpen(InputImagePath, GA_ReadOnly);
+    //创建8bit的数据
+    GDALDataset *TargetImage = poDriver->Create("../Output_Image/wuce_corrected.tif", new_imgWidth, new_imgHeight,
+                                                wuce.GetBandNum(),
+                                                GDT_Byte,
+                                                NULL);
+    double dGeoTrans[6] = {0};
+
+    //设置仿射变换参数
+    InputImage->GetGeoTransform(dGeoTrans);
+    TargetImage->SetGeoTransform(dGeoTrans);
+    //设置图像投影信息
+    TargetImage->SetProjection(InputImage->GetProjectionRef());
+
+    //用于保存读取的8bit数据
+    GByte *TargetData = new GByte[new_imgWidth];
+
+    //定义两幅图像坐标远点的偏移
+    int Dx = int(min_x);
+    int Dy = int(min_y);
+
+    //定义原始波段像素数据
+    double **banddata;
+
+    //定义间接法回到原图像后的坐标
+    double Gx, Gy;
+
+    //获取参数
+    this->GetParameter(coor_x, coor_y, coor_a, coor_b);
+
+    //循环波段
+    for (int iBand = 1; iBand <= wuce.GetBandNum(); iBand++)
+    {
+        GDALRasterBand *TargetBand = TargetImage->GetRasterBand(iBand);
+
+        wuce.ReadImage(InputImagePath, iBand);
+        banddata = wuce.GetImageData();
+
+        for (int i = 0; i < new_imgHeight; i++)    //循环图像高
+        {
+            //循环新图像,采用间接法双线性内插方式获取像素值
+            for (int j = 0; j < new_imgWidth; j++)
+            {
+                //新图像坐标系转换为原图像的坐标系
+                Gx = this->para_a[0] + this->para_a[1] * (j + Dx) +
+                     this->para_a[2] * (i + Dy) + this->para_a[3] * pow((j + Dx), 2) +
+                     this->para_a[4] * (j + Dx) * (i + Dy) + this->para_a[5] * pow((i + Dy), 2);
+                Gy = this->para_b[0] + this->para_b[1] * (j + Dx) +
+                     this->para_b[2] * (i + Dy) + this->para_b[3] * pow((j + Dx), 2) +
+                     this->para_b[4] * (j + Dx) * (i + Dy) + this->para_b[5] * pow((i + Dy), 2);
+
+                //双线性内插
+                if (Gx <= wuce.GetImgWidth() && Gy <= wuce.GetImgHeight() && Gx >= 0 && Gy >= 0)
+                {
+                    double p = Gx - int(Gx);
+                    double q = Gy - int(Gy);
+                    TargetData[j] =
+                            (1 - q) * ((1 - p) * banddata[int(Gy)][int(Gx)] + p * banddata[int(Gy)][int(Gx) + 1]) +
+                            q * ((1 - p) * banddata[int(Gy) + 1][int(Gx)] + p * banddata[int(Gy) + 1][int(Gx) + 1]);
+                }
+            }
+            TargetBand->RasterIO(GF_Write, 0, i, new_imgWidth, 1, TargetData, new_imgWidth, 1, GDT_Byte, 0, 0);
+        }
+        free(TargetData);    //释放内存
+    }
+    //关闭原始图像和结果图像
+    GDALClose((GDALDatasetH) TargetImage);
+    GDALClose((GDALDatasetH) InputImage);
+}

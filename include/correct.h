@@ -12,6 +12,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <math.h>
 #include <qimage.h>
 #include "gdal_priv.h"
@@ -19,6 +20,7 @@
 #include "Eigen/Eigen"
 
 using namespace Eigen;
+using namespace std;
 
 class Correct
 {
@@ -27,7 +29,10 @@ public:
     void GetCoordinate();
 
     //获取纠正参数
-    void GetParameter();
+    void GetParameter(double source_x[8],
+                      double source_y[8],
+                      double target_x[8],
+                      double target_y[8]);
 
     //相对配准(间接法)
     void RelativeRegistration();
@@ -37,10 +42,13 @@ protected:
     double para_a[6];
     double para_b[6];
 
-    //定义纠正前的图像坐标
+    //定义,纠正前的图像坐标
     double coor_x[8];
     double coor_y[8];
     //定义纠正后的图像坐标
     double coor_a[8];
     double coor_b[8];
+
+    int new_imgWidth;
+    int new_imgHeight;
 };

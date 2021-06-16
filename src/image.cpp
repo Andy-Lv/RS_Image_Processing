@@ -150,7 +150,7 @@ void The_Image::ImageStretching(const char *InputImagePath)
     //设置图像投影信息
     OutputImage->SetProjection(InputImage->GetProjectionRef());
 
-    //用于保存读取的12bit数据
+    //用于保存读取的16bit数据
     GUInt16 *InputData = new GUInt16[imgWidth];
     GByte *OutputData = new GByte[imgWidth];
 
