@@ -26,13 +26,13 @@ public:
     void ReadImage(const char *InputImagePath, const int nBand);
 
     //波段组合
-    void BandCombination(BandData imagename);
+    void BandCombination(const char *InputImagePath,BandData imagename, const QString outputimage);
 
     //输出图像波段像素信息
     double **GetImageData();
 
     //图像拉伸
-    void ImageStretching(const char *InputImagePath);
+    void ImageStretching(const char *InputImagePath,const char *outputimage);
 
     //输出图像信息
     int GetBandNum();

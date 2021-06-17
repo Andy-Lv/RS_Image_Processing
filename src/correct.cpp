@@ -56,9 +56,6 @@ void Correct::GetParameter(double source_x[8],
                            double target_x[8],
                            double target_y[8])
 {
-    //读取参数坐标
-    this->GetCoordinate();
-
     //定义参数矩阵
     Matrix<double, 6, 1> delt_a;
     Matrix<double, 6, 1> delt_b;
@@ -97,13 +94,13 @@ void Correct::GetParameter(double source_x[8],
     }
 }
 
-void Correct::RelativeRegistration()
+void Correct::RelativeRegistration(const char *outputimage)
 {
 //第一步:纠正后图像边界范围确定
 
     //读取第一波段获得图像属性数据
     The_Image wuce;
-    const char *InputImagePath = "../data/Geometric_Correction/wuce.tif";
+    const char *InputImagePath = "../data/Geometric_Correction/wucesource.tif";
     wuce.ReadImage(InputImagePath, 1);
 
     //获取四个角点像素坐标
@@ -148,7 +145,7 @@ void Correct::RelativeRegistration()
     min_x = temp_x;
     min_y = temp_y;
 
-    this->new_imgWidth = int((max_x - min_y) / 2) + 1;
+    this->new_imgWidth = int((max_x - min_x) / 2) + 1;
     this->new_imgHeight = int((max_y - min_y) / 2) + 1;
 
 //间接法纠正
@@ -158,7 +155,7 @@ void Correct::RelativeRegistration()
 
     GDALDataset *InputImage = (GDALDataset *) GDALOpen(InputImagePath, GA_ReadOnly);
     //创建8bit的数据
-    GDALDataset *TargetImage = poDriver->Create("../Output_Image/wuce_corrected.tif", new_imgWidth, new_imgHeight,
+    GDALDataset *TargetImage = poDriver->Create(&"../Output_Image/"[ *outputimage], new_imgWidth, new_imgHeight,
                                                 wuce.GetBandNum(),
                                                 GDT_Byte,
                                                 NULL);
@@ -224,4 +221,6 @@ void Correct::RelativeRegistration()
     //关闭原始图像和结果图像
     GDALClose((GDALDatasetH) TargetImage);
     GDALClose((GDALDatasetH) InputImage);
+
+    cout<<"成功保存配准后的图像: "<<outputimage<<endl;
 }

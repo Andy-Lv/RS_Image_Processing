@@ -35,7 +35,7 @@ public:
                       double target_y[8]);
 
     //相对配准(间接法)
-    void RelativeRegistration();
+    void RelativeRegistration(const char *outputimage);
 
 protected:
     //定义参数数组(二阶多项式)

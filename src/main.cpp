@@ -1,35 +1,37 @@
-#include"include/image.h"
+#include"include/main.h"
 
 int main()
 {
-	The_Image the_image;
-	BandData gaojing;
 
+	int choice;
+	cout<<"请输入需要的操作"<<endl;
 
-	//定义图像路径
-	const char* InputImagePath = "../data/Band_Combination/gaojing_subset.tif";
+	while(true)
+    {
+	    //证书操作
+        ShowLiscence();
 
-    //读取第一波段
-	the_image.ReadImage(InputImagePath, 1);
-	gaojing.banddata_1 = the_image.GetImageData();
+	    //菜单调用
+	    ShowMenu();
+	    cin>>choice;
 
-	//读取第二波段
-    the_image.ReadImage(InputImagePath, 2);
-    gaojing.banddata_2 = the_image.GetImageData();
-
-    //读取第二波段
-    the_image.ReadImage(InputImagePath, 3);
-    gaojing.banddata_3 = the_image.GetImageData();
-
-    //读取第二波段
-    the_image.ReadImage(InputImagePath, 4);
-    gaojing.banddata_4 = the_image.GetImageData();
-
-    //波段组合
-    the_image.BandCombination(gaojing);
-
-    //16位->8位
-    the_image.ImageStretching(InputImagePath);
-
-	return 0;
+        switch (choice)
+        {
+            case 1:
+                FirstProcessing();
+                break;
+            case 2:
+                SecondProcessing();
+                break;
+            case 3:
+                ThirdProcessing();
+                break;
+            case 0:
+                return 0;
+            default:
+                cout<<"您输入有误,请重新输入"<<endl;
+                system("pause");
+                system("clear");
+        }
+    }
 }

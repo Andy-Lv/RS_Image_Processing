@@ -28,11 +28,6 @@ void The_Image::ReadImage(const char *InputImagePath, const int nBand)
     this->bandNum = ImageData->GetRasterCount();    //波段数
     this->depth = GDALGetDataTypeSize(ImageData->GetRasterBand(1)->GetRasterDataType()) / 8;    //图像深度
 
-    cout << imgWidth << endl;
-    cout << imgHeight << endl;
-    cout << bandNum << endl;
-    cout << depth << endl;
-
     imagedata = new double *[imgHeight];
     for (int i = 0; i < imgHeight; i++)
     {
@@ -42,8 +37,6 @@ void The_Image::ReadImage(const char *InputImagePath, const int nBand)
     //读取波段
     GDALRasterBand *poBand;
     poBand = ImageData->GetRasterBand(nBand);
-
-    cout << "Data Type:" << GDALGetDataTypeName(poBand->GetRasterDataType()) << endl;
 
     //读取该波段的像素值
     float *pafScanline;
@@ -80,6 +73,8 @@ void The_Image::ReadImage(const char *InputImagePath, const int nBand)
 
     //关闭图像
     GDALClose(ImageData);
+
+    cout<<"读取第"<<nBand<<"波段成功"<<endl;
 }
 
 int The_Image::GetBandNum()
@@ -107,9 +102,25 @@ double **The_Image::GetImageData()
     return this->imagedata;
 }
 
-void The_Image::BandCombination(BandData imagename)
+void The_Image::BandCombination(const char* InputImagePath,BandData imagename,const QString outputimage)
 {
-    //1 创建绘图设备
+    //读取第一波段
+    this->ReadImage(InputImagePath, 1);
+    imagename.banddata_1 = this->GetImageData();
+
+    //读取第二波段
+    this->ReadImage(InputImagePath, 2);
+    imagename.banddata_2 = this->GetImageData();
+
+    //读取第二波段
+    this->ReadImage(InputImagePath, 3);
+    imagename.banddata_3 = this->GetImageData();
+
+    //读取第二波段
+    this->ReadImage(InputImagePath, 4);
+    imagename.banddata_4 = this->GetImageData();
+
+    //创建绘图设备
     QImage image(this->imgWidth, this->imgHeight, QImage::Format_ARGB32);
 
     //QImage可以修改图片
@@ -124,11 +135,13 @@ void The_Image::BandCombination(BandData imagename)
         }
     }
 
-    //4 保存图片
-    image.save("../Output_Image/Standard_false_color.png");
+    //保存图片
+    image.save("../Output_Image/"+outputimage+".png");
+
+    cout<<"成功输出波段组合后图像 "<<outputimage.toStdString()<<".png"<<endl;
 }
 
-void The_Image::ImageStretching(const char *InputImagePath)
+void The_Image::ImageStretching(const char *InputImagePath,const char *outputimage)
 {
     GDALAllRegister();
 
@@ -139,7 +152,7 @@ void The_Image::ImageStretching(const char *InputImagePath)
     GDALDriver *poDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
 
     //创建8bit的数据
-    GDALDataset *OutputImage = poDriver->Create("../Output_Image/gaojing_Stretched.tif", imgWidth, imgHeight, bandNum,
+    GDALDataset *OutputImage = poDriver->Create(&"../Output_Image/"[ *outputimage], imgWidth, imgHeight, bandNum,
                                                 GDT_Byte,
                                                 NULL);
     double dGeoTrans[6] = {0};
@@ -165,7 +178,7 @@ void The_Image::ImageStretching(const char *InputImagePath)
             //将数据读出来
             InputBand->RasterIO(GF_Read, 0, i, imgWidth, 1, InputData, imgWidth, 1, GDT_UInt16, 0, 0);
 
-            //循环，将12bit数据专为8bit数据，使用线性拉伸方式
+            //循环，将16bit数据专为8bit数据，使用线性拉伸方式
             for (int j = 0; j < imgWidth; j++)
             {
                 double TempData = InputData[j];
@@ -181,10 +194,15 @@ void The_Image::ImageStretching(const char *InputImagePath)
 
             OutputBand->RasterIO(GF_Write, 0, i, imgWidth, 1, OutputData, imgWidth, 1, GDT_Byte, 0, 0);
         }
-        free(OutputData);    //释放内存
-
-        //关闭原始图像和结果图像
-        GDALClose((GDALDatasetH) OutputImage);
-        GDALClose((GDALDatasetH) InputImage);
     }
+
+    delete[] InputData;
+    delete[] OutputData;
+    //关闭原始图像和结果图像
+    GDALClose((GDALDatasetH) OutputImage);
+    GDALClose((GDALDatasetH) InputImage);
+
+    cout<<"成功实现图像16bit -> 8bit转换"<<endl;
+    cout<<"成功实现图像分段线性拉伸"<<endl;
+    cout<<"成功保存拉伸完的图像:"<<outputimage<<endl;
 }

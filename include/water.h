@@ -31,6 +31,11 @@ public:
 
     void DrawImage(double **imagedata, const QString outputname);
 
+    double **GetNDWI_1993();
+    double **GetNDWI_2005();
+    double **GetMNDWI_1993();
+    double **GetMNDWI_2005();
+
 protected:
     double **NDWI_1993;
     double **NDWI_2005;

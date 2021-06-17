@@ -1,7 +1,6 @@
 //
 // Created by andy on 2021/6/17.
 //
-#include "include/correct.h"
 #include "include/image.h"
 #include "include/water.h"
 
@@ -127,5 +126,26 @@ void Water::DrawImage(double **imagedata, const QString outputname)
 
     const QString outputpath = "../Output_Image/" + outputname + ".png";
     //4 保存图片
-    image.save("../Output_Image/Standard_false_color.png");
+    image.save(outputpath);
+
+    cout<<"成功保存图像: "<<outputname.toStdString()<<endl;
+}
+
+double **Water::GetNDWI_1993()
+{
+    return this->NDWI_1993;
+}
+
+double **Water::GetNDWI_2005()
+{
+    return this->NDWI_2005;
+}
+
+double **Water::GetMNDWI_1993()
+{
+    return this->MNDWI_1993;
+}
+double **Water::GetMNDWI_2005()
+{
+    return this->MNDWI_2005;
 }
