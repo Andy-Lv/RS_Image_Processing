@@ -8,7 +8,7 @@ include_directories(.)
 add_executable(RS_Image_Processing
         src/image.cpp
         include/image.h
-        src/main.cpp include/correct.h src/correct.cpp)
+        src/main.cpp include/correct.h src/correct.cpp include/water.h src/water.cpp)
 
 # Eigen
 find_package(Eigen3 REQUIRED)
