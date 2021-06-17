@@ -7,7 +7,9 @@
 #include <qimage.h>
 #include "gdal_priv.h"
 #include "gdal.h"
+#include "Eigen/Eigen"
 
+using namespace Eigen;
 using namespace std;
 
 class BandData
@@ -22,19 +24,19 @@ public:
 class The_Image
 {
 public:
-    //ÌáÈ¡Í¼Ïñµ¥²¨¶ÎÏñËØ¾ØÕó
+    //æå–å›¾åƒå•æ³¢æ®µåƒç´ çŸ©é˜µ
     void ReadImage(const char *InputImagePath, const int nBand);
 
-    //²¨¶Î×éºÏ
+    //æ³¢æ®µç»„åˆ
     void BandCombination(const char *InputImagePath,BandData imagename, const QString outputimage);
 
-    //Êä³öÍ¼Ïñ²¨¶ÎÏñËØĞÅÏ¢
+    //è¾“å‡ºå›¾åƒæ³¢æ®µåƒç´ ä¿¡æ¯
     double **GetImageData();
 
-    //Í¼ÏñÀ­Éì
+    //å›¾åƒæ‹‰ä¼¸
     void ImageStretching(const char *InputImagePath,const char *outputimage);
 
-    //Êä³öÍ¼ÏñĞÅÏ¢
+    //è¾“å‡ºå›¾åƒä¿¡æ¯
     int GetBandNum();
 
     int GetImgWidth();
@@ -45,16 +47,16 @@ public:
 
 
 protected:
-    //Í¼ÏñĞÅÏ¢
+    //å›¾åƒä¿¡æ¯
     int bandNum;
     int imgWidth;
     int imgHeight;
     int depth;
 
-    //´¢´æÃ¿¸ö²¨¶Î×î´óÖµµÄÊı×éÖ¸Õë
+    //å‚¨å­˜æ¯ä¸ªæ³¢æ®µæœ€å¤§å€¼çš„æ•°ç»„æŒ‡é’ˆ
     int maxPix[4];
 
-    //´´½¨´¢´æÏñËØÖµµÄ¶şÎ¬Êı×é¿ÕÖ¸Õë
+    //åˆ›å»ºå‚¨å­˜åƒç´ å€¼çš„äºŒç»´æ•°ç»„ç©ºæŒ‡é’ˆ
     double **imagedata;
 
     GDALDataset *ImageData;

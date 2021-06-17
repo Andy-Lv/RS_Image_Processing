@@ -145,8 +145,8 @@ void Correct::RelativeRegistration(const char *outputimage)
     min_x = temp_x;
     min_y = temp_y;
 
-    this->new_imgWidth = int((max_x - min_x) / 2) + 1;
-    this->new_imgHeight = int((max_y - min_y) / 2) + 1;
+    this->new_imgWidth = int((max_x - min_x)) + 1;
+    this->new_imgHeight = int((max_y - min_y)) + 1;
 
 //间接法纠正
     GDALAllRegister();

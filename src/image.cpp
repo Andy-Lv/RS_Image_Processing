@@ -5,28 +5,28 @@
 
 void The_Image::ReadImage(const char *InputImagePath, const int nBand)
 {
-    //GDALËùÓĞ²Ù×÷¶¼ĞèÒªÏÈ×¢²á
+    //GDALæ‰€æœ‰æ“ä½œéƒ½éœ€è¦å…ˆæ³¨å†Œ
     GDALAllRegister();
 
-    //Ö§³ÖÖĞÎÄÂ·¾¶
+    //æ”¯æŒä¸­æ–‡è·¯å¾„
     CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
 
 
-    //¶ÁÈ¡TIFFÍ¼ÏñĞÅÏ¢
+    //è¯»å–TIFFå›¾åƒä¿¡æ¯
     ImageData = (GDALDataset *) GDALOpen(InputImagePath, GA_ReadOnly);
 
-    //ÅĞ¶ÏÍ¼ÏñÊÇ·ñ¶ÁÈ¡³É¹¦
+    //åˆ¤æ–­å›¾åƒæ˜¯å¦è¯»å–æˆåŠŸ
     if (ImageData == nullptr)
     {
         cout << "Can not open the image" << endl;
     }
 
-    //¶ÁÈ¡Í¼ÏñĞÅÏ¢
+    //è¯»å–å›¾åƒä¿¡æ¯
 
-    this->imgWidth = ImageData->GetRasterXSize();//Í¼Ïñ¿í¶È
-    this->imgHeight = ImageData->GetRasterYSize();//Í¼Ïñ¸ß¶È
-    this->bandNum = ImageData->GetRasterCount();    //²¨¶ÎÊı
-    this->depth = GDALGetDataTypeSize(ImageData->GetRasterBand(1)->GetRasterDataType()) / 8;    //Í¼ÏñÉî¶È
+    this->imgWidth = ImageData->GetRasterXSize();//å›¾åƒå®½åº¦
+    this->imgHeight = ImageData->GetRasterYSize();//å›¾åƒé«˜åº¦
+    this->bandNum = ImageData->GetRasterCount();    //æ³¢æ®µæ•°
+    this->depth = GDALGetDataTypeSize(ImageData->GetRasterBand(1)->GetRasterDataType()) / 8;    //å›¾åƒæ·±åº¦
 
     imagedata = new double *[imgHeight];
     for (int i = 0; i < imgHeight; i++)
@@ -34,11 +34,11 @@ void The_Image::ReadImage(const char *InputImagePath, const int nBand)
         imagedata[i] = new double[imgWidth];
     }
 
-    //¶ÁÈ¡²¨¶Î
+    //è¯»å–æ³¢æ®µ
     GDALRasterBand *poBand;
     poBand = ImageData->GetRasterBand(nBand);
 
-    //¶ÁÈ¡¸Ã²¨¶ÎµÄÏñËØÖµ
+    //è¯»å–è¯¥æ³¢æ®µçš„åƒç´ å€¼
     float *pafScanline;
     pafScanline = (float *) CPLMalloc(sizeof(float) * imgWidth * imgHeight);
 
@@ -51,10 +51,9 @@ void The_Image::ReadImage(const char *InputImagePath, const int nBand)
     {
         for (int j = 0; j < imgWidth; j++)
         {
-            //TODO: ·Ö¶ÎÏßĞÔÀ­Éì
             imagedata[i][j] = (float) pafScanline[t++];
 
-            //ÕÒ³ö±¾²¨¶Î×î´óÏñËØÖµ
+            //æ‰¾å‡ºæœ¬æ³¢æ®µæœ€å¤§åƒç´ å€¼
             if (imagedata[i][j] > max)
             {
                 max = imagedata[i][j];
@@ -62,19 +61,19 @@ void The_Image::ReadImage(const char *InputImagePath, const int nBand)
         }
     }
 
-    //Èç¹ûmax´óÓÚ255¾ÍÉèÖÃÎª255
+    //å¦‚æœmaxå¤§äº255å°±è®¾ç½®ä¸º255
     if (max > 255)
         this->maxPix[nBand - 1] = 255;
     else
         this->maxPix[nBand - 1] = max;
 
-    //ÊÍ·Å»º³åÇø
+    //é‡Šæ”¾ç¼“å†²åŒº
     CPLFree(pafScanline);
 
-    //¹Ø±ÕÍ¼Ïñ
+    //å…³é—­å›¾åƒ
     GDALClose(ImageData);
 
-    cout<<"¶ÁÈ¡µÚ"<<nBand<<"²¨¶Î³É¹¦"<<endl;
+    cout << "æˆåŠŸè¯»å–ç¬¬" << nBand << "æ³¢æ®µ" << endl;
 }
 
 int The_Image::GetBandNum()
@@ -102,107 +101,157 @@ double **The_Image::GetImageData()
     return this->imagedata;
 }
 
-void The_Image::BandCombination(const char* InputImagePath,BandData imagename,const QString outputimage)
+void The_Image::BandCombination(const char *InputImagePath, BandData imagename, const QString outputimage)
 {
-    //¶ÁÈ¡µÚÒ»²¨¶Î
+    //è¯»å–ç¬¬ä¸€æ³¢æ®µ
     this->ReadImage(InputImagePath, 1);
     imagename.banddata_1 = this->GetImageData();
 
-    //¶ÁÈ¡µÚ¶ş²¨¶Î
+    //è¯»å–ç¬¬äºŒæ³¢æ®µ
     this->ReadImage(InputImagePath, 2);
     imagename.banddata_2 = this->GetImageData();
 
-    //¶ÁÈ¡µÚ¶ş²¨¶Î
+    //è¯»å–ç¬¬äºŒæ³¢æ®µ
     this->ReadImage(InputImagePath, 3);
     imagename.banddata_3 = this->GetImageData();
 
-    //¶ÁÈ¡µÚ¶ş²¨¶Î
+    //è¯»å–ç¬¬äºŒæ³¢æ®µ
     this->ReadImage(InputImagePath, 4);
     imagename.banddata_4 = this->GetImageData();
 
-    //´´½¨»æÍ¼Éè±¸
+    //åˆ›å»ºç»˜å›¾è®¾å¤‡
     QImage image(this->imgWidth, this->imgHeight, QImage::Format_ARGB32);
 
-    //QImage¿ÉÒÔĞŞ¸ÄÍ¼Æ¬
+    //QImageå¯ä»¥ä¿®æ”¹å›¾ç‰‡
     for (int i = 0; i < this->imgHeight; i++)
     {
         for (int j = 0; j < this->imgWidth; j++)
         {
-            //ÉèÖÃÏñËØ
+            //è®¾ç½®åƒç´ 
             image.setPixel(QPoint(j, i), qRgb(imagename.banddata_4[i][j],
                                               imagename.banddata_3[i][j],
                                               imagename.banddata_2[i][j]));
         }
     }
 
-    //±£´æÍ¼Æ¬
-    image.save("../Output_Image/"+outputimage+".png");
+    //ä¿å­˜å›¾ç‰‡
+    image.save("../Output_Image/" + outputimage + ".png");
 
-    cout<<"³É¹¦Êä³ö²¨¶Î×éºÏºóÍ¼Ïñ "<<outputimage.toStdString()<<".png"<<endl;
+    cout << "æˆåŠŸè¾“å‡ºæ³¢æ®µç»„åˆåå›¾åƒ " << outputimage.toStdString() << ".png" << endl;
 }
 
-void The_Image::ImageStretching(const char *InputImagePath,const char *outputimage)
+void The_Image::ImageStretching(const char *InputImagePath, const char *outputimage)
 {
     GDALAllRegister();
 
-    //Ô­Ê¼Í¼Ïñ
+    //åŸå§‹å›¾åƒ
     GDALDataset *InputImage = (GDALDataset *) GDALOpen(InputImagePath, GA_ReadOnly);
 
-    //Í¼ÏñÇı¶¯
+    //å›¾åƒé©±åŠ¨
     GDALDriver *poDriver = GetGDALDriverManager()->GetDriverByName("GTiff");
 
-    //´´½¨8bitµÄÊı¾İ
-    GDALDataset *OutputImage = poDriver->Create(&"../Output_Image/"[ *outputimage], imgWidth, imgHeight, bandNum,
+    //åˆ›å»º8bitçš„æ•°æ®
+    GDALDataset *OutputImage = poDriver->Create("../Output_Image/gaojing_Stretched.tif", imgWidth, imgHeight, bandNum,
                                                 GDT_Byte,
                                                 NULL);
     double dGeoTrans[6] = {0};
 
-    //ÉèÖÃ·ÂÉä±ä»»²ÎÊı
+    //è®¾ç½®ä»¿å°„å˜æ¢å‚æ•°
     InputImage->GetGeoTransform(dGeoTrans);
     OutputImage->SetGeoTransform(dGeoTrans);
-    //ÉèÖÃÍ¼ÏñÍ¶Ó°ĞÅÏ¢
+    //è®¾ç½®å›¾åƒæŠ•å½±ä¿¡æ¯
     OutputImage->SetProjection(InputImage->GetProjectionRef());
 
-    //ÓÃÓÚ±£´æ¶ÁÈ¡µÄ16bitÊı¾İ
-    GUInt16 *InputData = new GUInt16[imgWidth];
-    GByte *OutputData = new GByte[imgWidth];
+    //ç”¨äºä¿å­˜è¯»å–çš„16bitæ•°æ®
+    GUInt16 *InputData = new GUInt16[imgHeight * imgWidth];
+    //ç”¨äºè¾“å‡ºçš„8bitæ•°æ®
+    GByte *OutputData = new GByte[imgHeight * imgWidth];
 
-    //Ñ­»·²¨¶Î
+    double minimumValue, maximumValue, meanValue, sigmaValue;
+
+    //å®šä¹‰ç›´æ–¹å›¾æ®µæ•°å’Œæ•°ç»„
+    int histogramBuckets = 1024;
+    unsigned long long *histogramArray = new unsigned long long[histogramBuckets];
+
+    //å¾ªç¯æ³¢æ®µ
     for (int iBand = 1; iBand <= bandNum; iBand++)
     {
         GDALRasterBand *InputBand = InputImage->GetRasterBand(iBand);
         GDALRasterBand *OutputBand = OutputImage->GetRasterBand(iBand);
 
-        for (int i = 0; i < imgHeight; i++)    //Ñ­»·Í¼Ïñ¸ß
-        {
-            //½«Êı¾İ¶Á³öÀ´
-            InputBand->RasterIO(GF_Read, 0, i, imgWidth, 1, InputData, imgWidth, 1, GDT_UInt16, 0, 0);
+        //è·å–è¯¥æ³¢æ®µçš„æœ€å¤§å€¼ æœ€å°å€¼ å¹³å‡å€¼ å’Œæ ‡å‡†å·®
+        InputBand->GetStatistics(true, true, &minimumValue, &maximumValue, &meanValue, &sigmaValue);
 
-            //Ñ­»·£¬½«16bitÊı¾İ×¨Îª8bitÊı¾İ£¬Ê¹ÓÃÏßĞÔÀ­Éì·½Ê½
+        //è·å–è¯¥æ³¢æ®µç°åº¦ç›´æ–¹å›¾
+        InputBand->GetHistogram(
+                minimumValue - std::numeric_limits<double>::epsilon(),
+                maximumValue + std::numeric_limits<double>::epsilon(),
+                histogramBuckets,
+                histogramArray,
+                false,
+                false,
+                GDALDummyProgress,
+                nullptr);
+
+        //å®šä¹‰çº¿æ€§æ‹‰ä¼¸ç•Œé™
+        double minPercent = 0;
+        double maxPercent = 1;
+
+        unsigned long long p1 = 0;
+        unsigned long long p2 = histogramBuckets - 1;
+
+        while (minPercent < 0.02)
+        {
+            minPercent += (double) histogramArray[p1++] /
+                          double(this->imgWidth * this->imgHeight);
+        }
+        while (maxPercent > 0.98)
+        {
+            maxPercent -= (double) histogramArray[p2--] /
+                          double(this->imgWidth * this->imgHeight);
+        }
+
+        //ç¡®å®šçº¿æ€§æ‹‰ä¼¸èŒƒå›´ç°åº¦å€¼ç•Œé™
+        double gap=maximumValue - minimumValue;
+        double pixgap = gap /(double)histogramBuckets;
+        double minpix = p1 * pixgap + minimumValue;
+        double maxpix = p2 * pixgap + minimumValue;
+        double stretched_gap=maxpix-minpix;
+
+
+
+
+
+        //å°†æ•°æ®è¯»å‡ºæ¥
+        InputBand->RasterIO(GF_Read, 0, 0, imgWidth, imgHeight, InputData, imgWidth, imgHeight, GDT_UInt16, 0, 0);
+
+        for (int i = 0; i < imgHeight; i++)    //å¾ªç¯å›¾åƒé«˜
+        {
+            //å¾ªç¯ï¼Œå°†16bitæ•°æ®ä¸“ä¸º8bitæ•°æ®ï¼Œä½¿ç”¨çº¿æ€§æ‹‰ä¼¸æ–¹å¼
             for (int j = 0; j < imgWidth; j++)
             {
-                double TempData = InputData[j];
-                if (TempData > 255.0)
+                if (InputData[i * imgWidth + j] < minpix)
+                    OutputData[i * imgWidth + j] = 0;
+                else if (InputData[i * imgWidth + j] >= minpix && InputData[i * imgWidth + j] < maxpix)
                 {
-                    TempData = 255;
-                } else
-                {
-                    TempData = TempData * maxPix[iBand - 1] / 255;
-                    OutputData[j] = (GUInt16) TempData;
+                    double temp=((double)InputData[i * imgWidth + j] - minpix) / stretched_gap * 255;
+                    OutputData[i * imgWidth + j] =(GByte)temp;
+                    //cout<<OutputData[i * imgWidth + j]<<endl;
                 }
+                if (InputData[i * imgWidth + j] > maxpix)
+                    OutputData[i * imgWidth + j] = 255;
             }
-
-            OutputBand->RasterIO(GF_Write, 0, i, imgWidth, 1, OutputData, imgWidth, 1, GDT_Byte, 0, 0);
         }
+        OutputBand->RasterIO(GF_Write, 0, 0, imgWidth, imgHeight, OutputData, imgWidth, imgHeight, GDT_Byte, 0, 0);
     }
 
     delete[] InputData;
     delete[] OutputData;
-    //¹Ø±ÕÔ­Ê¼Í¼ÏñºÍ½á¹ûÍ¼Ïñ
+    //å…³é—­åŸå§‹å›¾åƒå’Œç»“æœå›¾åƒ
     GDALClose((GDALDatasetH) OutputImage);
     GDALClose((GDALDatasetH) InputImage);
 
-    cout<<"³É¹¦ÊµÏÖÍ¼Ïñ16bit -> 8bit×ª»»"<<endl;
-    cout<<"³É¹¦ÊµÏÖÍ¼Ïñ·Ö¶ÎÏßĞÔÀ­Éì"<<endl;
-    cout<<"³É¹¦±£´æÀ­ÉìÍêµÄÍ¼Ïñ:"<<outputimage<<endl;
+    cout << "æˆåŠŸå®ç°å›¾åƒ16bit -> 8bitè½¬æ¢" << endl;
+    cout << "æˆåŠŸå®ç°å›¾åƒåˆ†æ®µçº¿æ€§æ‹‰ä¼¸" << endl;
+    cout << "æˆåŠŸä¿å­˜æ‹‰ä¼¸å®Œçš„å›¾åƒ:" << outputimage << endl;
 }

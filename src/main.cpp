@@ -4,14 +4,14 @@ int main()
 {
 
 	int choice;
-	cout<<"ÇëÊäÈëÐèÒªµÄ²Ù×÷"<<endl;
+	cout<<"è¯·è¾“å…¥éœ€è¦çš„æ“ä½œ"<<endl;
 
 	while(true)
     {
-	    //Ö¤Êé²Ù×÷
+	    //è¯ä¹¦æ“ä½œ
         ShowLiscence();
 
-	    //²Ëµ¥µ÷ÓÃ
+	    //èœå•è°ƒç”¨
 	    ShowMenu();
 	    cin>>choice;
 
@@ -29,7 +29,7 @@ int main()
             case 0:
                 return 0;
             default:
-                cout<<"ÄúÊäÈëÓÐÎó,ÇëÖØÐÂÊäÈë"<<endl;
+                cout<<"æ‚¨è¾“å…¥æœ‰è¯¯,è¯·é‡æ–°è¾“å…¥"<<endl;
                 system("pause");
                 system("clear");
         }
