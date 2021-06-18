@@ -17,10 +17,10 @@ void Water::GetNDWI()
     wuhan_water.banddata_2 = wuhan.GetImageData();
 
     //wuhan_2005的TM2和TM4储存在banddata_3和banddata_4中
-    wuhan.ReadImage("../data/Water/2005_10_12_B2.TIF", 1);
+    wuhan.ReadImage("../data/Water/2005_09_11_B2.TIF", 1);
     wuhan_water.banddata_3 = wuhan.GetImageData();
 
-    wuhan.ReadImage("../data/Water/2005_10_12_B4.TIF", 1);
+    wuhan.ReadImage("../data/Water/2005_09_11_B4.TIF", 1);
     wuhan_water.banddata_4 = wuhan.GetImageData();
 
     //获取图像大小
@@ -68,10 +68,10 @@ void Water::GetMNDWI()
     wuhan_water.banddata_2 = wuhan.GetImageData();
 
     //wuhan_2005的TM2和TM5储存在banddata_3和banddata_4中
-    wuhan.ReadImage("../data/Water/2005_10_12_B2.TIF", 1);
+    wuhan.ReadImage("../data/Water/2005_09_11_B2.TIF", 1);
     wuhan_water.banddata_3 = wuhan.GetImageData();
 
-    wuhan.ReadImage("../data/Water/2005_10_12_B5.TIF", 1);
+    wuhan.ReadImage("../data/Water/2005_09_11_B5.TIF", 1);
     wuhan_water.banddata_4 = wuhan.GetImageData();
 
 
@@ -124,11 +124,10 @@ void Water::DrawImage(double **imagedata, const QString outputname)
         }
     }
 
-    const QString outputpath = "../Output_Image/" + outputname + ".png";
     //4 保存图片
-    image.save(outputpath);
+    image.save("../Output_Image/" + outputname + ".png");
 
-    cout<<"成功保存图像: "<<outputname.toStdString()<<endl;
+    cout<<"成功保存图像: "<<outputname.toStdString()<< ".png" << endl;
 }
 
 double **Water::GetNDWI_1993()
