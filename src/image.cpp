@@ -46,26 +46,13 @@ void The_Image::ReadImage(const char *InputImagePath, const int nBand)
     poBand->RasterIO(GF_Read, 0, 0, imgWidth, imgHeight, pafScanline, imgWidth, imgHeight, GDT_Float32, 0, 0);
 
     int t = 0;
-    int max = 0;
     for (int i = 0; i < imgHeight; i++)
     {
         for (int j = 0; j < imgWidth; j++)
         {
             imagedata[i][j] = (float) pafScanline[t++];
-
-            //找出本波段最大像素值
-            if (imagedata[i][j] > max)
-            {
-                max = imagedata[i][j];
-            }
         }
     }
-
-    //如果max大于255就设置为255
-    if (max > 255)
-        this->maxPix[nBand - 1] = 255;
-    else
-        this->maxPix[nBand - 1] = max;
 
     //释放缓冲区
     CPLFree(pafScanline);

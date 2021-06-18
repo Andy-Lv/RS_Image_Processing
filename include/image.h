@@ -53,8 +53,6 @@ protected:
     int imgHeight;
     int depth;
 
-    //储存每个波段最大值的数组指针
-    int maxPix[4];
 
     //创建储存像素值的二维数组空指针
     double **imagedata;

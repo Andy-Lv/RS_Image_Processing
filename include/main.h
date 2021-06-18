@@ -10,14 +10,6 @@
 #include "include/image.h"
 #include "include/water.h"
 
-//void clear()//清屏函数
-//{
-//    char buf[1024]={0};
-//    cout<<"请输入回车键继续……"<<endl;
-//    fgets(buf,1024,stdin);
-//    system("clear");
-//}
-
 void ShowLiscence()
 {
     cout<<"Welcome to RS Image Processing System"<<endl;
@@ -56,7 +48,6 @@ void FirstProcessing()
     const char* StretchedImagePath = "../Output_Image/gaojing_Stretched.tif";
     the_image.BandCombination(StretchedImagePath,gaojing,"Stretched_gaojing_Standard_false_color");
 
-//    clear();
 }
 
 void SecondProcessing()
@@ -69,7 +60,6 @@ void SecondProcessing()
     wucesource.RelativeRegistration("wuce_corrected.tif");
     cout<<"相对配准完成"<<endl;
 
-//    clear();
 }
 
 void ThirdProcessing()
@@ -92,5 +82,4 @@ void ThirdProcessing()
 
     cout<<"水体NDWI/MNDWI图像分析完毕"<<endl;
 
-//    clear();
 }

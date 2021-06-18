@@ -74,12 +74,18 @@ void Correct::GetParameter(double source_x[8],
         A(i, 3) = pow(target_x[i], 2);
         A(i, 4) = target_x[i] * target_y[i];
         A(i, 5) = pow(target_y[i], 2);
+//        for (int j = 0; j < 6; ++j)
+//        {
+//            cout<<A(i,j)<<" ";
+//        }
+//        cout<<endl;
     }
 
     for (int i = 0; i < 8; ++i)
     {
         Lx(i, 0) = source_x[i];
         Ly(i, 0) = source_y[i];
+        //cout<<source_x[i]<<" "<<source_y[i]<<endl;
     }
 
     //计算多项式系数
@@ -89,8 +95,9 @@ void Correct::GetParameter(double source_x[8],
     //返回多项式结果到参数数组中
     for (int i = 0; i < 6; ++i)
     {
-        this->para_a[0] = delt_a(i, 0);
-        this->para_b[0] = delt_b(i, 0);
+        //cout<<delt_a(i,0)<<" "<<delt_b(i,0)<<endl;
+        this->para_a[i] = delt_a(i, 0);
+        this->para_b[i] = delt_b(i, 0);
     }
 }
 
@@ -155,7 +162,7 @@ void Correct::RelativeRegistration(const char *outputimage)
 
     GDALDataset *InputImage = (GDALDataset *) GDALOpen(InputImagePath, GA_ReadOnly);
     //创建8bit的数据
-    GDALDataset *TargetImage = poDriver->Create(&"../Output_Image/"[ *outputimage], new_imgWidth, new_imgHeight,
+    GDALDataset *TargetImage = poDriver->Create("../Output_Image/wuce_corrected.tif", new_imgWidth, new_imgHeight,
                                                 wuce.GetBandNum(),
                                                 GDT_Byte,
                                                 NULL);
@@ -168,8 +175,7 @@ void Correct::RelativeRegistration(const char *outputimage)
     TargetImage->SetProjection(InputImage->GetProjectionRef());
 
     //用于保存读取的8bit数据
-    GByte *TargetData = new GByte[new_imgWidth];
-
+    GByte *TargetData = new GByte[new_imgHeight * new_imgWidth];
     //定义两幅图像坐标远点的偏移
     int Dx = int(min_x);
     int Dy = int(min_y);
@@ -179,6 +185,8 @@ void Correct::RelativeRegistration(const char *outputimage)
 
     //定义间接法回到原图像后的坐标
     double Gx, Gy;
+
+    double temp;
 
     //获取参数
     this->GetParameter(coor_x, coor_y, coor_a, coor_b);
@@ -205,22 +213,35 @@ void Correct::RelativeRegistration(const char *outputimage)
                      this->para_b[4] * (j + Dx) * (i + Dy) + this->para_b[5] * pow((i + Dy), 2);
 
                 //双线性内插
-                if (Gx <= wuce.GetImgWidth() && Gy <= wuce.GetImgHeight() && Gx >= 0 && Gy >= 0)
+                if (Gx < wuce.GetImgWidth() && Gy < wuce.GetImgHeight() && Gx >= 0 && Gy >= 0)
                 {
                     double p = Gx - int(Gx);
                     double q = Gy - int(Gy);
-                    TargetData[j] =
-                            (1 - q) * ((1 - p) * banddata[int(Gy)][int(Gx)] + p * banddata[int(Gy)][int(Gx) + 1]) +
-                            q * ((1 - p) * banddata[int(Gy) + 1][int(Gx)] + p * banddata[int(Gy) + 1][int(Gx) + 1]);
+                    if (Gx + 1 > wuce.GetImgWidth() || Gy + 1 > wuce.GetImgHeight())
+                    {
+                        temp = banddata[int(Gy)][int(Gx)];
+                    } else
+                    {
+                        temp =
+                                (1 - q) * ((1 - p) * banddata[int(Gy)][int(Gx)] + p * banddata[int(Gy)][int(Gx + 1)]) +
+                                q * ((1 - p) * banddata[int(Gy + 1)][int(Gx)] + p * banddata[int(Gy + 1)][int(Gx + 1)]);
+                    }
+                    temp = (int) temp;
+                    TargetData[i * new_imgWidth + j] = (GByte) temp;
+                    temp = 0;
+                } else
+                {
+                    TargetData[i * new_imgWidth + j] = (GByte) 255;
                 }
             }
-            TargetBand->RasterIO(GF_Write, 0, i, new_imgWidth, 1, TargetData, new_imgWidth, 1, GDT_Byte, 0, 0);
         }
-        free(TargetData);    //释放内存
+        TargetBand->RasterIO(GF_Write, 0, 0, new_imgWidth, new_imgHeight, TargetData, new_imgWidth, new_imgHeight,
+                             GDT_Byte, 0, 0);
     }
+    delete[] TargetData;    //释放内存
     //关闭原始图像和结果图像
     GDALClose((GDALDatasetH) TargetImage);
     GDALClose((GDALDatasetH) InputImage);
 
-    cout<<"成功保存配准后的图像: "<<outputimage<<endl;
+    cout << "成功保存配准后的图像: " << outputimage << endl;
 }
