@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <map>
 #include <math.h>
 #include <qimage.h>
 #include "gdal_priv.h"
@@ -30,6 +31,8 @@ public:
     void GetMNDWI();
 
     void DrawImage(double **imagedata, const QString outputname);
+
+    void SmoothImage(const QString outputname);
 
     double **GetNDWI_1993();
     double **GetNDWI_2005();

@@ -107,6 +107,9 @@ void Water::DrawImage(double **imagedata, const QString outputname)
     //1 创建绘图设备
     QImage image(this->imgWidth, this->imgHeight, QImage::Format_ARGB32);
 
+    //对图像进行平滑处理
+    double filtering[9];//定义滤波区域
+
     //QImage可以修改图片
     for (int i = 0; i < this->imgHeight; i++)
     {
@@ -121,6 +124,7 @@ void Water::DrawImage(double **imagedata, const QString outputname)
                 image.setPixel(QPoint(j, i), qRgb(0, 0, 0));
             }
 
+
         }
     }
 
@@ -128,6 +132,61 @@ void Water::DrawImage(double **imagedata, const QString outputname)
     image.save("../Output_Image/" + outputname + ".png");
 
     cout<<"成功保存图像: "<<outputname.toStdString()<< ".png" << endl;
+}
+
+bool cmp(QColor a,QColor b)
+{
+    return (a.red()+a.blue()+a.green())>(b.red()+b.blue()+b.green());
+}
+
+void Water::SmoothImage(const QString outputname)
+{
+    QImage origin("../Output_Image/" + outputname + ".png");
+    QImage newImage(origin.width(), origin.height(), QImage::Format_ARGB32);
+
+    QColor oldColor;
+
+    //对图像进行平滑处理
+    QColor filtering[9];//定义滤波区域
+
+    int averange;
+
+    for(int i = 0; i<origin.width(); i++)
+    {
+        for(int j = 0; j<origin.height(); j++)
+        {
+            //开始中值滤波处理
+            if(i>0&&j>0&&i<origin.height()-1&&j<origin.width())
+            {
+                //滤波矩阵赋值
+                filtering[0]=origin.pixel(i-1,j-1);
+                filtering[1]=origin.pixel(i-1,j);
+                filtering[2]=origin.pixel(i-1,j+1);
+                filtering[3]=origin.pixel(i,j-1);
+                filtering[4]=origin.pixel(i,j);
+                filtering[5]=origin.pixel(i,j+1);
+                filtering[6]=origin.pixel(i+1,j-1);
+                filtering[7]=origin.pixel(i+1,j);
+                filtering[8]=origin.pixel(i+1,j+1);
+
+                //给滤波矩阵排序
+                sort(filtering,filtering+8,cmp);
+
+                //中值滤波完成
+                int average = (filtering[4].red()+filtering[4].green()+filtering[4].blue())/3;
+                newImage.setPixel(i,j,qRgb(average,average,average));
+            }
+            else
+            {
+                oldColor = QColor(origin.pixel(i,j));
+                int average = (oldColor.red()+oldColor.green()+oldColor.blue())/3;
+                newImage.setPixel(i,j,qRgb(average,average,average));
+            }
+        }
+    }
+
+    //4 保存图片
+    newImage.save("../Output_Image/" + outputname + "_smoothed.png");
 }
 
 double **Water::GetNDWI_1993()

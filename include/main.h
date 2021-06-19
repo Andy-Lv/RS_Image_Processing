@@ -73,12 +73,23 @@ void ThirdProcessing()
 
     cout<<"绘制 wuhan_ndwi_1993 "<<endl;
     wuhansource.DrawImage(wuhansource.GetNDWI_1993(),"wuhan_ndwi_1993");
+    cout<<"开始对 wuhan_ndwi_1993 进行中值滤波平滑处理"<<endl;
+    wuhansource.SmoothImage("wuhan_ndwi_1993");
+
     cout<<"绘制 wuhan_ndwi_2005 "<<endl;
     wuhansource.DrawImage(wuhansource.GetNDWI_2005(),"wuhan_ndwi_2005");
+    cout<<"开始对 wuhan_ndwi_1993 进行中值滤波平滑处理"<<endl;
+    wuhansource.SmoothImage("wuhan_ndwi_2005");
+
     cout<<"绘制 wuhan_mndwi_1993 "<<endl;
     wuhansource.DrawImage(wuhansource.GetMNDWI_1993(),"wuhan_mndwi_1993");
+    cout<<"开始对 wuhan_mndwi_1993 进行中值滤波平滑处理"<<endl;
+    wuhansource.SmoothImage("wuhan_mndwi_1993");
+
     cout<<"绘制 wuhan_mndwi_2005 "<<endl;
     wuhansource.DrawImage(wuhansource.GetMNDWI_2005(),"wuhan_mndwi_2005");
+    cout<<"开始对 wuhan_mndwi_2005 进行中值滤波平滑处理"<<endl;
+    wuhansource.SmoothImage("wuhan_mndwi_2005");
 
     cout<<"水体NDWI/MNDWI图像分析完毕"<<endl;
 
