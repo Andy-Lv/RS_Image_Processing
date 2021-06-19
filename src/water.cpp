@@ -156,7 +156,7 @@ void Water::SmoothImage(const QString outputname)
         for(int j = 0; j<origin.height(); j++)
         {
             //开始中值滤波处理
-            if(i>0&&j>0&&i<origin.height()-1&&j<origin.width())
+            if(i>0&&j>0&&i<origin.width()-1&&j<origin.height()-1)
             {
                 //滤波矩阵赋值
                 filtering[0]=origin.pixel(i-1,j-1);
